@@ -1,6 +1,4 @@
 import jwt from "jsonwebtoken";
-import fs from "fs";
-import path from "path";
 import bcrypt from "bcrypt"
 import crypto from "crypto"
 import { getAuthConfig } from "../config/init.js";

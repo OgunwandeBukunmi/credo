@@ -22,11 +22,11 @@ export const loginController = async (req, res) => {
     //If the token is valid, the server will send the data.
     //If the token is not valid, the server will send an error.
 
-    const db = getAuthConfig().mongo
-    const User = db.collection("users");
-    const RefreshToken = db.collection("refresh_tokens")
+    const { findUserByEmail } = getAuthConfig().crud.user
+    const { createRefreshToken } = getAuthConfig().crud.refreshToken
 
-    const user = await User.findOne({ email })
+
+    const user = await findUserByEmail({ email })
 
     if (!user) {
         return res.status(400).json({ message: "User not found" });
@@ -40,10 +40,10 @@ export const loginController = async (req, res) => {
     }
 
     const accessToken = signAccessToken({ email, userId: user._id, role: user.role })
-    const refreshtoken = crypto.randomBytes(64).toString("hex");
-
     const refreshToken = await createRefreshToken()
-    await RefreshToken.insertOne({ ...refreshToken, userId: user._id, revoked: false })
+
+
+    await createRefreshToken({ ...refreshToken, userId: user._id, revoked: false })
 
     const cookieOptions = {
         httpOnly: true,

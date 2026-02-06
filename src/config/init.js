@@ -3,11 +3,31 @@ let config = {}
 export function initAuthConfig(userconfig) {
 
     if (!userconfig.jwt) throw new Error("No JWT Keys")
-    if (!userconfig.mongo) throw new Error("No Mongodb Credentials")
     if (!userconfig.rateLimit) throw new Error("No Rate Time Limits")
-    // if(!userconfig.email) throw new Error("No Email credentials")
     if (!userconfig.sendMail) throw new Error("Didn't provide sendMail function")
-    //email part too 
+    if (!userconfig.crud) throw new Error("No CRUD functions")
+
+    //should look like this 
+    //           crud: {
+    //     user: {
+    //       findUserByEmail,
+    //       findUserById,
+    //       createUser,
+    //       updateUserById
+    //     },
+    //     refreshToken: {
+    //       createRefreshToken,
+    //       findValidRefreshTokenByTokenHash,
+    //       revokeRefreshTokenByTokenHash
+    //     },
+    //     otp: {
+    //       createOTP,
+    //       findOTPByEmail,
+    //       deleteOTPByEmail,
+    //       incrementOTPAttempts,
+    //       verifyOTP
+    //     }
+    //   }
 
     console.log("Auth System initialized")
 

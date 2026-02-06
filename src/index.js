@@ -16,6 +16,6 @@ const createAuthSystem = (config) => {
 export default createAuthSystem
 
 
-//add the max-minutes rate for each of the auth routes in the config
-//add the email credentials
-//add the new code like config editing, more controllers , more files for sending email and otp , and routes, and editing the code to incorporate the new component rate limiting
+//create mail function for resend and nodemailer and also console log the email if the mode is development or if the user decides
+//correct the readme setup code
+//mongodb vs mongoose issue (solution make use of functions in the config)
