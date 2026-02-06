@@ -70,9 +70,10 @@ export const registerController = async (req, res) => {
     //store the refresh token in the db
     //Send the token to the client.
     try {
-        const db = getAuthConfig().mongo
-        const User = db.collection("users");
-        const RefreshToken = db.collection("refresh_tokens")
+
+        //functions are findUserByEmail and createUser createRefreshToken
+        const { findUserByEmail, createUser } = getAuthConfig().crud.user
+        const { createRefreshToken } = getAuthConfig().crud.refreshToken
 
         const { email, password } = req?.body || {};
 
@@ -80,21 +81,21 @@ export const registerController = async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({ message: "Email and password are required" });
         }
-        const user = await User.findOne({ email })
+        const user = await findUserByEmail({ email })
 
         if (user) {
             return res.status(400).json({ message: "User already exists" });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10)
-        const newUser = await User.insertOne({ email, password: hashedPassword, role: ["user"] })
+        const newUser = await createUser({ email, password: hashedPassword, role: ["user"] })
 
 
 
         const accessToken = signAccessToken({ email, userId: newUser._id, role: ["user"] })
 
         const refreshToken = await createRefreshToken()
-        await RefreshToken.insertOne({ ...refreshToken, userId: newUser.insertedId, revoked: false })
+        await createRefreshToken({ ...refreshToken, userId: newUser.insertedId, revoked: false })
 
         const cookieOptions = {
             httpOnly: true,
@@ -115,6 +116,7 @@ export const registerController = async (req, res) => {
 
 export const logoutController = async (req, res) => {
     try {
+        //findAndUpdateRefreshToken
         const db = getAuthConfig().mongo
         const RefreshToken = db.collection("refresh_tokens")
         const refreshTokenClient = req.cookies.refreshToken;
@@ -159,9 +161,9 @@ export const refreshTokenController = async (req, res) => {
     //Generate a new access token.
     //Send the access token to the client.
     try {
-        const db = getAuthConfig().mongo
-        const User = db.collection("users");
-        const RefreshToken = db.collection("refresh_tokens")
+        const { findUserByEmail, createUser } = getAuthConfig().crud.user
+        const { createRefreshToken } = getAuthConfig().crud.refreshToken
+        //findRefreshToken
         const refreshTokenClient = req.cookies.refreshToken;
 
         if (!refreshTokenClient) {
@@ -212,6 +214,10 @@ export const resetPasswordRequestController = async (req, res) => {
     //Properly code the send email function
     //which collection does the otp actually get sent to 
 
+    //sendmail functions
+    //deleteManyOTPs
+    //createOTP
+    //findUserByEmail
     const { email } = req.body;
     const db = getAuthConfig().mongo
     const sendMail = getAuthConfig().sendMail
@@ -246,10 +252,15 @@ export const resetPasswordRequestController = async (req, res) => {
 export const resetPasswordVerifyController = async (req, res) => {
 
     //get otp from body
+    //findOTPByEmail
+    //verifyOTP
+    //incrementOTPAttempts
+    //findOneAndUpdateOTPs
+
     const { email, otp } = req.body
     const db = getAuthConfig().mongo
     const PasswordResetOTPs = db.collection("otps");
-    const record = await PasswordResetOTPs.findOne({ email })
+    const record = await PasswordResetOTPs.findOne({ email }) //findOTPbyEmail
 
 
 
@@ -279,35 +290,39 @@ export const resetPasswordVerifyController = async (req, res) => {
 export const resetPasswordConfirmController = async (req, res) => {
 
     const { email, newpassword } = req.body
+    try {
+        //findUserByEmail
+        //findOTPByEmail
+        //updateUserByEmail
+        const db = getAuthConfig().mongo
+        const User = db.collection("users");
+        const PasswordResetOTPs = db.collection("otps")
+        const record = await PasswordResetOTPs.findOne({ email })
 
+        const user = await User.findOne({ email })
 
-    const db = getAuthConfig().mongo
-    const User = db.collection("users");
-    const PasswordResetOTPs = db.collection("otps")
-    const record = await PasswordResetOTPs.findOne({ email })
-
-    const user = await User.findOne({ email })
-
-    if (!record || !record.verified) {
-        res.status(400).json({ message: "Unauthorized" })
-    }
-
-    if (!user) {
-        return res.status(400).json({ message: "User not found" });
-    }
-
-
-    const hashedPassword = await bcrypt.hash(newpassword, 10)
-
-    const newUser = await User.findOneAndUpdate({
-        email
-    }, {
-        $set: {
-            password: hashedPassword
+        if (!record || !record.verified) {
+            res.status(400).json({ message: "Unauthorized" })
         }
-    })
-    //take the email and password
-    //update the password associated to the email
 
-    res.json({ message: "Password Reset" })
+        if (!user) {
+            return res.status(400).json({ message: "User not found" });
+        }
+
+
+        const hashedPassword = await bcrypt.hash(newpassword, 10)
+
+        const newUser = await User.findOneAndUpdate({
+            email
+        }, {
+            $set: {
+                password: hashedPassword
+            }
+        })
+
+        res.json({ message: "Password Reset" })
+
+    } catch (err) {
+        console.error(err)
+    }
 }
