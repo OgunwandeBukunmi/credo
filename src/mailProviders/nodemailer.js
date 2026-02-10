@@ -2,7 +2,7 @@
 
 import nodemailer from "nodemailer"
 
-function createNodemailerMailProvider(config) {
+export function createNodemailerMailProvider(config) {
     const transporter = nodemailer.createTransport(config);
 
     const sendMail = async ({ to, subject, text, html }) => {

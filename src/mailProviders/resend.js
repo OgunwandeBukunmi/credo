@@ -1,7 +1,7 @@
 //code for resend
 import { Resend } from "resend";
 
-function createResendMailProvider(APIKEY, from) {
+export function createResendMailProvider(APIKEY, from) {
 
 
     const sendMail = async ({ to, subject, text, html }) => {
@@ -18,3 +18,4 @@ function createResendMailProvider(APIKEY, from) {
 
     return sendMail
 }
+

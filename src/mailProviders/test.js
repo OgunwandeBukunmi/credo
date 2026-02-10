@@ -1,6 +1,6 @@
 
 
-function consoleMailProvider() {
+export function consoleMailProvider() {
 
 
     function sendMail({ to, subject, otp }) {

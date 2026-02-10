@@ -13,7 +13,7 @@ export function createMongoOTPAdapter(db) {
             return otps.findOne({ email });
         },
 
-        async deleteOTPs(email) {
+        async deleteOTPByEmail(email) {
             return otps.deleteMany({ email });
         },
 
