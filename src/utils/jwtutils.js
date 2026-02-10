@@ -23,7 +23,7 @@ export function signAccessToken(payload) {
 //     });
 // }
 
-export function createRefreshToken() {
+export function signRefreshToken() {
     const token = crypto.randomBytes(64).toString("hex");
 
     const tokenHash = crypto

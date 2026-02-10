@@ -13,19 +13,19 @@ export function initAuthConfig(userconfig) {
     //       findUserByEmail,
     //       findUserById,
     //       createUser,
-    //       updateUserById
+    //       updateUserPassword
     //     },
     //     refreshToken: {
     //       createRefreshToken,
-    //       findValidRefreshTokenByTokenHash,
-    //       revokeRefreshTokenByTokenHash
+    //       findValidRefreshTokenByTokenHash,,
+    //       revokeRefreshToken
     //     },
     //     otp: {
     //       createOTP,
     //       findOTPByEmail,
     //       deleteOTPByEmail,
     //       incrementOTPAttempts,
-    //       verifyOTP
+    //       verifyOTP,
     //     }
     //   }
 
