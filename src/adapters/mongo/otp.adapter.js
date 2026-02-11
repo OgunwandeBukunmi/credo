@@ -1,32 +1,32 @@
 export function createMongoOTPAdapter(db) {
-    const otps = db.collection("otps");
+    const otps = db.collection("otp");
 
     return {
-        async createOTPs(data) {
+        async createOTP(data) {
             return otps.insertOne({
                 ...data,
                 createdAt: new Date(),
             });
         },
 
-        async findOTPByEmail(email) {
-            return otps.findOne({ email });
+        async findOTPByEmail(email, purpose) {
+            return otps.findOne({ email, purpose });
         },
 
-        async deleteOTPByEmail(email) {
-            return otps.deleteMany({ email });
+        async deleteOTPByEmail(email, purpose) {
+            return otps.deleteMany({ email, purpose });
         },
 
-        async incrementOTPAttempts(email) {
+        async incrementOTPAttempts(email, purpose) {
             return otps.updateOne(
-                { email },
+                { email, purpose },
                 { $inc: { attempts: 1 } }
             );
         },
 
-        async verifyOTP(email) {
+        async verifyOTP(email, purpose) {
             return otps.updateOne(
-                { email },
+                { email, purpose },
                 {
                     $set: {
                         verified: true,

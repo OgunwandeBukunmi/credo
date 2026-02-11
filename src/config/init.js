@@ -14,6 +14,7 @@ export function initAuthConfig(userconfig) {
     //       findUserById,
     //       createUser,
     //       updateUserPassword
+    //       verfiyUserEmail
     //     },
     //     refreshToken: {
     //       createRefreshToken,

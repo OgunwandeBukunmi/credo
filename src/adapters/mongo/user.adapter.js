@@ -31,5 +31,17 @@ export function createMongoUserAdapter(db) {
                 }
             );
         },
+
+        async verfiyUserEmail(email) {
+            return users.updateOne(
+                { email },
+                {
+                    $set: {
+                        isEmailVerified: true,
+                        updatedAt: new Date(),
+                    },
+                }
+            );
+        },
     };
 }

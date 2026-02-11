@@ -1,0 +1,52 @@
+.hero {
+  padding: 6rem 1.5rem;
+  text-align: center;
+  background: linear-gradient(135deg,
+      #0f172a,
+      #020617);
+  color: #fff;
+}
+
+.heroInner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 3.2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.subtitle {
+  margin-top: 1rem;
+  font-size: 1.25rem;
+  opacity: 0.85;
+  line-height: 1.6;
+}
+
+.buttons {
+  margin-top: 2.5rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.primaryBtn {
+  background: #6366f1;
+  border: none;
+}
+
+.primaryBtn:hover {
+  background: #4f46e5;
+}
+
+.secondaryBtn {
+  color: #fff;
+  border-color: #64748b;
+}
+
+.secondaryBtn:hover {
+  border-color: #e5e7eb;
+}

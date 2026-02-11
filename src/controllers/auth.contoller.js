@@ -55,7 +55,7 @@ export const loginController = async (req, res) => {
     res.cookie("refreshToken", refreshToken.token, cookieOptions);
 
     //redirect to home page 
-    res.json({ accessToken });
+    res.json({ accessToken, userId: user._id });
 }
 
 export const registerController = async (req, res) => {
@@ -88,7 +88,7 @@ export const registerController = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10)
-        const userData = { email, password: hashedPassword, role: ["user"] }
+        const userData = { email, password: hashedPassword, role: ["user"], isEmailVerified: false }
         const newUser = await createUser(userData)
 
 
@@ -109,12 +109,144 @@ export const registerController = async (req, res) => {
         res.cookie("refreshToken", refreshToken.token, cookieOptions);
 
         //redirect to home page 
-        res.json({ accessToken });
+        res.json({ accessToken, userId: user._id });
     } catch (error) {
         console.log(error)
     }
 
 }
+
+
+export async function requestEmailVerificationController(req, res) {
+
+    const { findUserByEmail } = getAuthConfig().crud.user
+    const { createOTP } = getAuthConfig().crud.otp
+    const mailProvider = getAuthConfig().mailProvider
+    try {
+        const { email } = req?.body || {};
+
+        if (!email) {
+            return res.status(400).json({
+                message: "Email is required"
+            });
+        }
+
+
+        const user = await findUserByEmail(email);
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        if (user.isEmailVerified) {
+            return res.status(400).json({
+                message: "Email already verified"
+            });
+        }
+
+        await deleteOTPByEmail(email, purpose);
+
+        const genOtp = generateOTP();
+        const hashedOTP = hashOTP(otp);
+        const otp = await createOTP({
+            email,
+            purpose: "email_verification"
+        });
+
+        // 3. Send email
+        await sendMail({
+            to: email,
+            subject: "Verify your email",
+            text: `Your verification code is ${otp.code}`,
+            html: `<p>Your verification code is <strong>${otp.code}</strong></p>`
+        });
+
+        return res.status(200).json({
+            message: "Verification email sent"
+        });
+
+    } catch (error) {
+        console.error("Request verify email error:", error);
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+}
+
+
+export async function verifyEmailController(req, res) {
+    const purpose = "email_verification"
+    const { findUserByEmail } = getAuthConfig().crud.user
+    const { verifyOTP, incrementOTPAttempts, deleteOTPByEmail } = getAuthConfig().crud.otp
+    try {
+        const { email, otp } = req?.body || {};
+
+        if (!email || !otp) {
+            return res.status(400).json({
+                message: "Email and OTP are required"
+            });
+        }
+
+
+        const user = await findUserByEmail(email)
+        if (!user) {
+
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+        // 1. Verify OTP
+        if (user.isEmailVerified) {
+            return res.status(400).json({
+                message: "Email already verified"
+            });
+        }
+
+        const otpRecord = await findOTPByEmail(email, purpose);
+
+        if (!otpRecord) {
+            return res.status(400).json({
+                message: "OTP not found"
+            });
+        }
+
+        if (otpRecord.attempts >= 5) {
+            await deleteOTPByEmail(email, purpose);
+            return res.status(400).json({
+                message: "Too many attempts. Please request a new OTP"
+            });
+        }
+
+        const hashedUserOTP = hashOTP(otp)
+
+        if (hashedUserOTP !== otpRecord.otp) {
+            await incrementOTPAttempts(email, purpose);
+
+            return res.status(400).json({
+                message: "Invalid or expired OTP"
+            });
+        }
+
+        // 2. Mark user as verified
+        await verfiyUserEmail(email);
+
+        // 3. Cleanup OTP
+        await deleteOTPByEmail(email, purpose);
+
+        return res.status(200).json({
+            message: "Email verified successfully"
+        });
+
+    } catch (error) {
+        console.error("Verify email error:", error);
+        return res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+}
+
 
 export const logoutController = async (req, res) => {
     try {
@@ -207,23 +339,24 @@ export const refreshTokenController = async (req, res) => {
 export const resetPasswordRequestController = async (req, res) => {
 
 
-
+    const purpose = "reset_password"
     const { email } = req.body;
     const { findUserByEmail, } = getAuthConfig().crud.user
-    const { deleteOTPByEmail, createOTPs } = getAuthConfig().crud.otp
+    const { deleteOTPByEmail, createOTP } = getAuthConfig().crud.otp
     const sendMail = getAuthConfig().sendMail
 
     const user = await findUserByEmail(email);
     if (!user) {
         return res.status(404).json({ message: "User not found" });
     }
-    const otp = generateOTP();
-    const hashedOTP = hashOTP(otp);
-    await deleteOTPByEmail(email)
+    const genOTP = generateOTP();
+    const otp = hashOTP(genOTP);
+    await deleteOTPByEmail(email, purpose)
 
     const data = {
         email,
-        hashedOTP,
+        otp,
+        purpose,
         userId: user["_id"],
         expiresAt: new Date(Date.now + 10 * 60 * 1000),
         verified: false,
@@ -231,7 +364,7 @@ export const resetPasswordRequestController = async (req, res) => {
         createdAt: new Date()
 
     }
-    await createOTPs(data)
+    await createOTP(data)
 
     sendMail({
         to: email,
@@ -247,10 +380,10 @@ export const resetPasswordVerifyController = async (req, res) => {
     //verifyOTP
     //incrementOTPAttempts
     //findOneAndUpdateOTPs
-
+    const purpose = "reset_password"
     const { email, otp } = req.body
     const { findOTPByEmail, verifyOTP } = getAuthConfig().crud.otp
-    const record = await findOTPByEmail(email)
+    const record = await findOTPByEmail(email, purpose)
 
 
     if (!record) {
@@ -265,13 +398,13 @@ export const resetPasswordVerifyController = async (req, res) => {
         return res.status(424).json({ message: "Too many attempts" })
     }
 
-    const recordOTP = hashOTP(otp)
-    if (recordOTP !== record.hashedOTP) {
-        await incrementOTPAttempts(email)
+    const hashedUserOTP = hashOTP(otp)
+    if (hashedUserOTP !== record.otp) {
+        await incrementOTPAttempts(email, purpose)
         res.status(400).json({ message: "Incorrect OTP" })
     }
 
-    await verifyOTP(email)
+    await verifyOTP(email, purpose)
     //check if otp matches the otp from the db
     //if yes process 200 ok if not 404
     res.status(200).json({ message: "OTP has been verified" })
