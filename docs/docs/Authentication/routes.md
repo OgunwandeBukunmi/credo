@@ -59,6 +59,49 @@ localStorage.setItem("accessToken", data.accessToken);
 //Refresh Token is sent as an http-only cookie
 ```
 
+## POST `/verify-email/request`
+
+Request for an OTP message 
+
+```js
+const response = await fetch("http://backend-url/api/v1/auth/verify-email/request", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    email: "user@email.com"
+  })
+});
+
+const data = await response.json()
+
+const result = data.message // {message : "Verification OTP Email sent"}
+
+```
+
+## POST `/verify-email/verify`
+
+Verify the OTP sent to the user.
+
+```js
+const response  = await fetch("http://backend-url/api/v1/auth/verify-email/verify", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    email: "user@email.com",
+    otp: "123456"
+  })
+});
+
+
+const data = await response.json()
+
+const result  = data.message // { message: "Email Verified" }
+```
+
 ## POST `/logout`
 Logs the user out and revokes the refresh token.
 ```js

@@ -127,6 +127,46 @@ app.listen(3000, () => console.log("Server running on port 3000"));
 }
 ```
 
+**POST `api/auth/verify-email/request`**
+
+#### Request Body
+
+```json 
+
+{
+  "email": "string"
+}
+
+```
+
+#### Response Body 
+
+```json
+{
+  "message": "Verification OTP Email sent"
+}
+```
+**POST `api/auth/verify-email/verify`**
+
+#### Request Body
+
+```json 
+
+{
+  "email": "string",
+  "otp": "string"
+}
+
+```
+
+#### Response Body 
+
+```json
+{
+  "message": "Email Verified"
+}
+```
+
 **POST `api/auth/logout`**
 
 #### Request Body

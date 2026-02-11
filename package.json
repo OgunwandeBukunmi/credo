@@ -6,7 +6,9 @@
   "exports": {
     ".": "./src/index.js",
     "./adapters": "./src/adapters/index.js",
-    "./mailProviders": "./src/mailProviders/index.js"
+    "./mailProviders": "./src/mailProviders/index.js",
+    "./middlewear": "./src/middlewear/index.js",
+    "./utils": "./src/utils/index.js"
   },
   "type": "module",
   "scripts": {

@@ -32,10 +32,10 @@ const crud = {
   },
   otp: {
     createOTP: async (data) => {},
-    findOTPByEmail: async (email) => {},
-    deleteOTPByEmail: async (email) => {},
-    incrementOTPAttempts: async (email) => {},
-    verifyOTP: async (email, code) => {}
+    findOTPByEmail: async (email , purpose) => {},
+    deleteOTPByEmail: async (email , purpose) => {},
+    incrementOTPAttempts: async (email , purpose) => {},
+    verifyOTP: async (email, purpose) => {}
   }
 };
 ```
@@ -126,14 +126,20 @@ export const userAdapter = {
     users.push(user);
     return user;
   },
-
-  findUserAndUpdate: async (query, update) => {
-    const user = users.find(u => u.email === query.email);
+  updateUserPassword: async (email, password) => {
+    const user = users.find(u => u.email === email);
     if (!user) return null;
 
-    Object.assign(user, update);
+    user.password = password;
     return user;
-  }
+  },
+  verfiyUserEmail: async (email) => {
+    const user = users.find(u => u.email === email);
+    if (!user) return null;
+
+    user.isEmailVerified = true;
+    return user;
+   }
 };
 
 const refreshTokens = []
@@ -182,28 +188,28 @@ export const otpAdapter = {
     return otp
   },
 
-  findOTPByEmail: async (email) => {
-    return otps.find(o => o.email === email) || null
+  findOTPByEmail: async (email , purpose) => {
+    return otps.find(o => o.email === email && o.purpose === purpose) || null
   },
 
-  deleteOTPByEmail: async (email) => {
-    const index = otps.findIndex(o => o.email === email)
+  deleteOTPByEmail: async (email , purpose) => {
+    const index = otps.findIndex(o => o.email === email && o.purpose === purpose)
     if (index === -1) return false
 
     otps.splice(index, 1)
     return true
   },
 
-  incrementOTPAttempts: async (email) => {
-    const otp = otps.find(o => o.email === email)
+  incrementOTPAttempts: async (email , purpose) => {
+    const otp = otps.find(o => o.email === email && o.purpose === purpose)
     if (!otp) return null
 
     otp.attempts += 1
     return otp
   },
 
-  verifyOTP: async (email, code) => {
-    const otp = otps.find(o => o.email === email)
+  verifyOTP: async (email, code , purpose) => {
+    const otp = otps.find(o => o.email === email && o.purpose === purpose)
     if (!otp) return false
 
     if (otp.code !== code) {

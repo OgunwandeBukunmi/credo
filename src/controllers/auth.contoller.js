@@ -55,7 +55,7 @@ export const loginController = async (req, res) => {
     res.cookie("refreshToken", refreshToken.token, cookieOptions);
 
     //redirect to home page 
-    res.json({ accessToken, userId: user._id });
+    res.json({ accessToken, user });
 }
 
 export const registerController = async (req, res) => {
@@ -109,7 +109,7 @@ export const registerController = async (req, res) => {
         res.cookie("refreshToken", refreshToken.token, cookieOptions);
 
         //redirect to home page 
-        res.json({ accessToken, userId: user._id });
+        res.json({ accessToken, message: "User Registers Verify Email", user: newUser });
     } catch (error) {
         console.log(error)
     }
@@ -119,9 +119,10 @@ export const registerController = async (req, res) => {
 
 export async function requestEmailVerificationController(req, res) {
 
+    const purpose = "email_verification"
     const { findUserByEmail } = getAuthConfig().crud.user
-    const { createOTP } = getAuthConfig().crud.otp
-    const mailProvider = getAuthConfig().mailProvider
+    const { createOTP, deleteOTPByEmail } = getAuthConfig().crud.otp
+    const sendMail = getAuthConfig().sendMail
     try {
         const { email } = req?.body || {};
 
@@ -149,18 +150,20 @@ export async function requestEmailVerificationController(req, res) {
         await deleteOTPByEmail(email, purpose);
 
         const genOtp = generateOTP();
-        const hashedOTP = hashOTP(otp);
+        const hashedOTP = hashOTP(genOtp);
         const otp = await createOTP({
             email,
-            purpose: "email_verification"
+            purpose: "email_verification",
+            otp: hashedOTP
         });
 
         // 3. Send email
         await sendMail({
             to: email,
             subject: "Verify your email",
-            text: `Your verification code is ${otp.code}`,
-            html: `<p>Your verification code is <strong>${otp.code}</strong></p>`
+            text: `Your verification code is ${genOtp}`,
+            otp: genOtp,
+            html: `<p>Your verification code is <strong>${genOtp}</strong></p>`
         });
 
         return res.status(200).json({
@@ -178,8 +181,8 @@ export async function requestEmailVerificationController(req, res) {
 
 export async function verifyEmailController(req, res) {
     const purpose = "email_verification"
-    const { findUserByEmail } = getAuthConfig().crud.user
-    const { verifyOTP, incrementOTPAttempts, deleteOTPByEmail } = getAuthConfig().crud.otp
+    const { findUserByEmail, verfiyUserEmail } = getAuthConfig().crud.user
+    const { findOTPByEmail, incrementOTPAttempts, deleteOTPByEmail } = getAuthConfig().crud.otp
     try {
         const { email, otp } = req?.body || {};
 
@@ -370,6 +373,7 @@ export const resetPasswordRequestController = async (req, res) => {
         to: email,
         subject: "Reset Password",
         text: `Your OTP is ${otp}`,
+        otp: genOTP,
     });
     res.json({ message: "User Gotten and OTP has been sent" })
 }
