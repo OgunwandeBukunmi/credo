@@ -255,7 +255,7 @@ NONE
 }
 ```
 
-Go to  [Authentication Overview](./authentication/overview.md) for more insight.
+Go to  [Authentication Overview](./authentication/overview) for more insight.
 
 
 

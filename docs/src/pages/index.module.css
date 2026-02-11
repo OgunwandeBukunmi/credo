@@ -50,3 +50,15 @@
 .secondaryBtn:hover {
   border-color: #e5e7eb;
 }
+
+.code {
+  background-color: #1e293b;
+  color: #f8fafc;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.9rem;
+  display: inline-block;
+  border: 1px solid #334155;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}

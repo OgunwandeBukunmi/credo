@@ -1,4 +1,4 @@
-# Mail Providers Overview
+#  Overview
 
 Mail providers define how emails are sent inside CREDO.
 The system is provider-based, meaning you can swap email services
@@ -30,7 +30,7 @@ Every mail provider must:
 
 ## Learn More
 
-- [Console Provider](./console)
-- [Nodemailer Provider](./nodemailer)
-- [Resend Provider](./resend)
+- [Console Provider](./Console)
+- [Nodemailer Provider](./Nodemailer)
+- [Resend Provider](./Resend)
 - [Create a Custom Mail Provider](./customMailProvider)

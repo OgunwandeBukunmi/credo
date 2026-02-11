@@ -1,3 +1,7 @@
+---
+id: customMailProvider
+title: Custom Mail Provider
+---
 # Creating a Custom Mail Provider
 
 To create your own provider, you only need to return sendMail.

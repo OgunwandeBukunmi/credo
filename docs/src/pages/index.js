@@ -49,9 +49,27 @@ export default function Home() {
       description="Credo – pluggable authentication, mail providers, and database adapters"
     >
       <HomepageHeader />
+
+
+
       <main>
+        <div className="container margin-vert--lg text--center">
+          <div className={clsx(styles.code, 'padding-vert--md')}>
+            <code>npm install @oluwabukunmi/credo</code>
+          </div>
+        </div>
+
+
+        {/* <main>
+        <div className="container margin-vert--lg text--center">
+          <div className={styles.code}>
+            <code>npm install @oluwabukunmi/credo</code>
+          </div>
+        </div> */}
+
+
         <HomepageFeatures className={clsx(styles.hero)} />
       </main>
-    </Layout>
+    </Layout >
   );
 }
